@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Career Compass — 25 Question Quiz</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:#0f172a;
+    --panel:#0f172a; /* using dark hero then card */
+    --card:#ffffff;
+    --muted:#94a3b8;
+    --accent:#ffb86b;
+    --accent-2:#4a4ddf;
+    --glass: rgba(255,255,255,0.06);
+  }
+  *{box-sizing:border-box}
+  body{
+    font-family: Inter, system-ui, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    margin:0;
+    background: linear-gradient(180deg,#eef2ff 0%, #f8fafc 100%);
+    color:#0b1220;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:28px;
+  }
+
+  .wrap{
+    width:100%;
+    max-width:980px;
+    background:var(--card);
+    border-radius:14px;
+    box-shadow: 0 12px 40px rgba(8,15,30,0.12);
+    overflow:hidden;
+    display:grid;
+    grid-template-columns: 1fr 420px;
+  }
+
+  /* Left: quiz flow */
+  .left{
+    padding:28px;
+  }
+  header.hero{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    margin-bottom:14px;
+  }
+  .logo{
+    width:56px;height:56px;border-radius:10px;
+    background:linear-gradient(135deg,var(--accent-2),var(--accent));
+    display:flex;align-items:center;justify-content:center;color:white;font-weight:700;
+    box-shadow: 0 6px 18px rgba(74,77,223,0.18);
+    font-size:20px;
+  }
+  .title h1{margin:0;font-size:20px}
+  .title p{margin:3px 0 0;color:var(--muted);font-size:13px}
+
+  .progress{
+    height:10px;background:#eef2ff;border-radius:999px;overflow:hidden;margin:18px 0;
+  }
+  .progress > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent-2),var(--accent));border-radius:999px;transition:width .45s cubic-bezier(.2,.9,.3,1)}
+
+  /* question card area */
+  .q-area{
+    min-height:340px;
+    position:relative;
+  }
+
+  .question-card{
+    position:absolute;left:0;top:0;width:100%;transition:transform .45s cubic-bezier(.2,.9,.3,1),opacity .35s ease;
+    padding:18px;border-radius:12px;background:linear-gradient(180deg,#fff,#fbfdff);box-shadow:0 10px 30px rgba(8,15,30,0.06);
+  }
+  .question-card.exit-left{transform:translateX(-30px);opacity:0;pointer-events:none}
+  .question-card.exit-right{transform:translateX(30px);opacity:0;pointer-events:none}
+  .question-card.enter{transform:translateX(0);opacity:1}
+
+  .q-title{font-size:18px;margin:0 0 12px}
+  .q-sub{color:var(--muted);font-size:13px;margin-bottom:14px}
+
+  .scale{
+    display:flex;gap:10px;align-items:center;justify-content:space-between;
+    margin-top:8px;
+  }
+  .scale input[type="range"]{width:100%}
+  .scale-val{width:46px;text-align:center;font-weight:700;background:#f6f8ff;border-radius:8px;padding:6px 8px;color:var(--accent-2)}
+
+  .controls{display:flex;gap:10px;margin-top:18px;align-items:center}
+  .btn{
+    background:var(--accent-2);color:white;padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700;
+    box-shadow: 0 8px 18px rgba(74,77,223,0.12);
+  }
+  .btn.ghost{background:transparent;color:var(--accent-2);border:1px solid #e7e9ff}
+  .nav-mini{margin-left:auto;color:var(--muted);font-size:13px}
+
+  /* Right: sidebar summary */
+  .right{
+    padding:22px 20px;
+    background: linear-gradient(180deg, rgba(74,77,223,0.06), transparent 30%);
+    display:flex;flex-direction:column;gap:14px;
+    border-left:1px solid rgba(8,15,30,0.03);
+  }
+  .summary{
+    background:linear-gradient(180deg,#ffffff,#fbfdff);
+    padding:14px;border-radius:12px;box-shadow:0 6px 18px rgba(8,15,30,0.04)
+  }
+  .summary h3{margin:0 0 8px;font-size:15px}
+  .summary p{margin:0;color:var(--muted);font-size:13px}
+  .scorebig{font-size:34px;font-weight:800;color:var(--accent-2);margin-top:10px}
+
+  .tips{font-size:13px;color:var(--muted);line-height:1.45}
+  .footer-note{margin-top:auto;font-size:12px;color:var(--muted);text-align:center}
+
+  /* result modal inside container */
+  .result-panel{
+    padding:22px;border-radius:12px;background:linear-gradient(180deg,#fff,#fbfdff);box-shadow:0 12px 30px rgba(8,15,30,0.06)
+  }
+  .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#fff8e5;color:#b86b00;font-weight:700;margin-top:8px}
+
+  /* responsive */
+  @media (max-width:980px){
+    .wrap{grid-template-columns:1fr; padding:10px}
+    .right{order:3}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap" role="application" aria-label="Career Compass quiz app">
+
+  <div class="left">
+    <header class="hero" aria-hidden="false">
+      <div class="logo">CC</div>
+      <div class="title">
+        <h1>Career Compass</h1>
+        <p>25-question quiz — find fields that fit you (no backend)</p>
+      </div>
+    </header>
+
+    <div class="progress" aria-hidden="true"><i id="progressBar" style="width:0%"></i></div>
+
+    <main class="q-area" id="qArea" aria-live="polite">
+      <!-- Question cards injected here -->
+    </main>
+
+    <div class="controls" style="margin-top:18px;">
+      <button id="prevBtn" class="btn ghost" onclick="prevQ()" aria-label="Previous question">Back</button>
+      <div class="nav-mini" id="qCount">Question 1 / 25</div>
+      <button id="nextBtn" class="btn" onclick="nextQ()" aria-label="Next question">Next</button>
+    </div>
+
+  </div>
+
+  <aside class="right" aria-hidden="false">
+    <div class="summary">
+      <h3>Your Progress</h3>
+      <p id="subtitle">Keep going — answer honestly.</p>
+      <div class="scorebig" id="liveScore">0</div>
+      <div style="margin-top:12px;">
+        <small class="tips">Tip: Use numbers as quick self-ratings — 1 (low) to 5 (high).</small>
+      </div>
+    </div>
+
+    <div class="summary" id="livePreview">
+      <h3>Immediate Preview</h3>
+      <p id="previewText">No result yet — complete the quiz to see recommendations.</p>
+    </div>
+
+    <div class="summary" style="display:flex;flex-direction:column;gap:10px;align-items:center;">
+      <button class="btn ghost" onclick="resetQuiz()">Reset</button>
+      <button class="btn" id="downloadBtn" onclick="downloadResult()" style="display:none">Save Result (JSON)</button>
+    </div>
+
+    <div class="footer-note">Works offline — export & host anywhere (GitHub Pages, Netlify, Vercel).</div>
+  </aside>
+</div>
+
+<script>
+/* ====== QUESTIONS (25) ======
+   Each question expects a 1..5 rating (1 = low, 5 = high).
+   You can change wording easily here.
+*/
+const QUESTIONS = [
+  "I enjoy solving logical puzzles and problems.",
+  "I like creating visual art, writing, or designing.",
+  "I feel energized by working with numbers and data.",
+  "I enjoy helping people and understanding emotions.",
+  "I like building or debugging software or scripts.",
+  "I prefer structured experiments and lab work.",
+  "I enjoy public speaking or leading group discussions.",
+  "I like organizing events, schedules, or budgets.",
+  "I prefer hands-on technical tasks (electronics, mechanics).",
+  "I feel curious about biology and human health.",
+  "I like to study history, languages, or literature.",
+  "I enjoy optimizing processes and workflows.",
+  "I prefer creative problem solving over routine tasks.",
+  "I like learning new programming languages and tools.",
+  "I enjoy reading about economics, business, or finance.",
+  "I prefer collaborative teamwork and social projects.",
+  "I like mapping out systems and logical flows.",
+  "I enjoy research, reading scientific papers, and testing ideas.",
+  "I am interested in entrepreneurship or starting a business.",
+  "I feel drawn to counseling, nursing, or healthcare roles.",
+  "I like experimenting with new technologies (AI, ML, Web).",
+  "I value precision and accuracy in calculations.",
+  "I enjoy storytelling, film, or other creative media.",
+  "I like measuring outcomes and making data-driven decisions.",
+  "I feel motivated by creating useful software products."
+];
+
+const NUM = QUESTIONS.length; // should be 25
+let answers = Array(NUM).fill(3); // default to 3
+let idx = 0;
+
+/* Render question card for index i */
+function renderQuestion(i, direction='forward'){
+  const qArea = document.getElementById('qArea');
+  const old = qArea.querySelector('.question-card');
+  if(old){
+    // add exit class for animation
+    old.classList.add(direction === 'forward' ? 'exit-left' : 'exit-right');
+    // remove old after animation
+    setTimeout(()=> old.remove(), 300);
+  }
+
+  const card = document.createElement('div');
+  card.className = 'question-card enter';
+  card.innerHTML = `
+    <div>
+      <div class="q-title">Q${i+1}. ${QUESTIONS[i]}</div>
+      <div class="q-sub">Rate from <strong>1</strong> (low) to <strong>5</strong> (high)</div>
+
+      <div style="display:flex;gap:12px;align-items:center">
+        <input id="range_${i}" type="range" min="1" max="5" step="1" value="${answers[i]}" style="flex:1">
+        <div class="scale-val" id="val_${i}">${answers[i]}</div>
+      </div>
+
+      <div style="margin-top:12px;color:var(--muted);font-size:13px">
+        Tip: if unsure, pick your honest gut response.
+      </div>
+    </div>
+  `;
+
+  qArea.appendChild(card);
+
+  // hook range
+  const range = document.getElementById(`range_${i}`);
+  const val = document.getElementById(`val_${i}`);
+  range.addEventListener('input', (e)=>{
+    answers[i] = Number(e.target.value);
+    val.textContent = e.target.value;
+    updateLivePreview();
+  });
+
+  // Update header counters
+  document.getElementById('qCount').textContent = `Question ${i+1} / ${NUM}`;
+  // update buttons visibility
+  document.getElementById('prevBtn').style.visibility = i === 0 ? 'hidden' : 'visible';
+  document.getElementById('nextBtn').textContent = i === NUM-1 ? 'Finish' : 'Next';
+  // progress
+  updateProgress();
+}
+
+/* navigation */
+function nextQ(){
+  if(idx < NUM - 1){
+    idx++;
+    renderQuestion(idx, 'forward');
+  } else {
+    // finish -> show results
+    showResults();
+  }
+}
+function prevQ(){
+  if(idx > 0){
+    idx--;
+    renderQuestion(idx, 'backward');
+  }
+}
+
+/* progress and live preview */
+function updateProgress(){
+  const pct = Math.round(((idx)/ (NUM-1)) * 100);
+  document.getElementById('progressBar').style.width = `${pct}%`;
+  document.getElementById('liveScore').textContent = totalScore();
+}
+
+function totalScore(){
+  return answers.reduce((s,n)=>s+n,0);
+}
+
+/* Determine recommendation
+   We'll produce three buckets with some nuance:
+   - Science & Tech (STEM)
+   - Commerce & Business
+   - Arts & Humanities
+   - Health & Social (medical/counseling)
+   Scoring approach: map specific questions more indicative to each bucket.
+*/
+function getRecommendation(){
+  // create weighted mapping arrays (indices 0..24)
+  const weights = {
+    arts:    [1,1,0,0,0,0,1,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,0],
+    commerce:[0,0,1,0,0,0,1,1,0,0,0,1,0,0,1,0,1,0,1,0,0,1,0,1,1],
+    science: [1,0,1,0,1,1,0,0,1,1,0,1,0,1,0,0,1,1,0,0,1,1,0,1,1],
+    health:  [0,0,0,1,0,1,0,0,0,1,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0]
+  };
+
+  const sums = { arts:0, commerce:0, science:0, health:0 };
+  for(const k of Object.keys(weights)){
+    for(let i=0;i<NUM;i++){
+      sums[k] += answers[i] * weights[k][i];
+    }
+  }
+
+  // normalize by max possible weight sum to get comparables
+  return sums;
+}
+
+function updateLivePreview(){
+  const sums = getRecommendation();
+  // pick top
+  const keys = Object.keys(sums);
+  let top = keys[0];
+  for(const k of keys) if(sums[k] > sums[top]) top = k;
+
+  const labels = {
+    arts: "Arts & Humanities",
+    commerce: "Commerce & Business",
+    science: "Science & Technology",
+    health: "Health & Social Care"
+  };
+  const previews = {
+    arts: "Creative fields: design, content, media, communication.",
+    commerce: "Business fields: finance, management, entrepreneurship.",
+    science: "Technical fields: engineering, data science, research.",
+    health: "Care fields: medicine, nursing, counseling, public health."
+  };
+
+  document.getElementById('previewText').textContent = `${labels[top]} — ${previews[top]}`;
+  document.getElementById('liveScore').textContent = totalScore();
+}
+
+/* Show final results panel */
+function showResults(){
+  const qArea = document.getElementById('qArea');
+  qArea.innerHTML = ''; // clear
+
+  const sums = getRecommendation();
+  // order keys by score desc
+  const ranking = Object.entries(sums).sort((a,b)=>b[1]-a[1]);
+
+  const topKey = ranking[0][0];
+  const labels = {
+    arts: "Arts & Humanities",
+    commerce: "Commerce & Business",
+    science: "Science & Technology",
+    health: "Health & Social Care"
+  };
+
+  const descriptions = {
+    arts: "You show strengths for creative and expressive roles. Consider Graphic Design, Content Creation, UI/UX, Media & Communications.",
+    commerce: "You show strengths for business, analysis, and organization. Consider Commerce, Finance, Management, Marketing, Entrepreneurship.",
+    science: "You show logical/technical strengths — consider Engineering, Data Science, Computer Science, R&D.",
+    health: "You show people-centered and caring strengths — consider Medicine, Nursing, Psychology, Social Work, Allied Health."
+  };
+
+  const resourceLinks = {
+    arts: ["Portfolio tips", "Free courses: design, writing"],
+    commerce: ["Finance basics", "Startup 101"],
+    science: ["Intro to coding", "Data science bootcamps"],
+    health: ["Medical volunteering", "Psychology basics"]
+  };
+
+  const resultHTML = document.createElement('div');
+  resultHTML.className = 'result-panel';
+  resultHTML.innerHTML = `
+    <h2>Your Top Match: <span class="pill">${labels[topKey]}</span></h2>
+    <p style="margin-top:12px;color:var(--muted)">${descriptions[topKey]}</p>
+
+    <div style="display:flex;gap:12px;margin-top:18px;flex-wrap:wrap">
+      <div style="flex:1;min-width:180px">
+        <h4 style="margin:0 0 8px">Score Summary</h4>
+        <ul id="ranklist" style="margin:0;padding-left:18px;color:var(--muted)"></ul>
+      </div>
+
+      <div style="flex:1;min-width:180px">
+        <h4 style="margin:0 0 8px">Next steps</h4>
+        <ol style="color:var(--muted);margin:0 0 0 18px;padding:0">
+          <li>Try 1 course or project in this field (free online).</li>
+          <li>Build 1 portfolio item or small project.</li>
+          <li>Talk to 1 professional in that field (informational interview).</li>
+        </ol>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:18px">
+      <button class="btn" onclick="downloadResult()">Download Result (JSON)</button>
+      <button class="btn ghost" onclick="retake()">Retake Quiz</button>
+      <button class="btn" onclick="copyShare()">Copy Share Text</button>
+      <a class="btn ghost" href="#" onclick="saveToLocal()">Save Locally</a>
+    </div>
+
+    <div style="margin-top:14px;color:var(--muted);font-size:13px">
+      <strong>Note:</strong> This is a heuristic recommendation. For high-stakes decisions get career counselling.
+    </div>
+  `;
+
+  qArea.appendChild(resultHTML);
+
+  // fill rankings
+  const ul = resultHTML.querySelector('#ranklist');
+  const labelsOrder = { arts: 'Arts', commerce:'Commerce', science:'Science/Tech', health:'Health' };
+  ranking.forEach(([k,v])=>{
+    const li = document.createElement('li');
+    li.textContent = `${labelsOrder[k]}: ${Math.round(v)}`;
+    ul.appendChild(li);
+  });
+
+  // show download button
+  document.getElementById('downloadBtn').style.display = 'inline-block';
+
+  // update preview text to top match
+  document.getElementById('previewText').textContent = `${labels[topKey]} — ${descriptions[topKey]}`;
+
+  // progress to 100
+  document.getElementById('progressBar').style.width = '100%';
+}
+
+/* small UX helpers */
+function retake(){
+  answers = Array(NUM).fill(3);
+  idx = 0;
+  renderQuestion(idx);
+  updateLivePreview();
+  document.getElementById('downloadBtn').style.display = 'none';
+}
+
+function resetQuiz(){
+  if(confirm("Reset all answers and start over?")){
+    retake();
+  }
+}
+
+function downloadResult(){
+  const payload = {
+    timestamp: new Date().toISOString(),
+    answers,
+    total: totalScore(),
+    recommendation: getRecommendation()
+  };
+  const blob = new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'career_compass_result.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* store locally (localStorage) */
+function saveToLocal(){
+  const payload = {timestamp:new Date().toISOString(),answers,total:totalScore()};
+  localStorage.setItem('career_compass_saved', JSON.stringify(payload));
+  alert('Saved locally in your browser (localStorage).');
+}
+
+/* share text to clipboard */
+function copyShare(){
+  const sums = getRecommendation();
+  const keys = Object.keys(sums).sort((a,b)=>sums[b]-sums[a]);
+  const top = keys[0];
+  const labels = {arts:'Arts & Humanities', commerce:'Commerce & Business', science:'Science & Technology', health:'Health & Social Care'};
+  const txt = `My Career Compass result: top match — ${labels[top]}. Score: ${totalScore()}/125.`;
+  navigator.clipboard?.writeText(txt).then(()=> alert('Copied share text to clipboard'));
+}
+
+/* initialize */
+renderQuestion(idx);
+updateLivePreview();
+</script>
+
+</body>
+</html>
+
